@@ -174,5 +174,19 @@ with gr.Blocks(title="AI Copilot") as interface:
     )
 
 
+"""
+When running locally:
+    - Launch Gradio
+    - On exit, print collected LLM metrics to console
+ On Hugging Face:
+    - Metrics are NOT printed (interactive=True)
+    """
 if __name__ == "__main__":
-    interface.launch()
+    try:
+        interface.launch()
+    finally:
+        if not os.environ.get("HF_SPACE_ID"):
+            print("\n=== LLM METRICS REPORT (LOCAL ONLY) ===")
+            for k, v in llm.metrics().items():
+                print(f"{k}: {v}")
+
