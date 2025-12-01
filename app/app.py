@@ -3,11 +3,18 @@ Gradio Web Interface for AI Copilot
 This web layer wraps the core conversation logic (ConversationManager)
 and the Groq LLM client, exposing them through a Gradio ChatInterface.
 """
-
+#Dependencies
 import gradio as gr
+import uuid 
+from datetime import datetime
 from core.conversation import ConversationManager
 from core.prompting import build_messages
 from services.llm import LLMClient
+
+#Logger 
+def log(event:str, request_id: str, extra: str= ""):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"{timestamp} | {event.upper()} | req={request_id} | {extra}") 
 
 # Initialize the global LLM client
 llm = LLMClient()
@@ -34,6 +41,7 @@ def chat_fn(user_input, chat_history, conv_state):
     - chat_history: a list of dicts: {"role": "...", "content": "..."}
     - conv_state: the updated ConversationManager
     """
+    request_id= uuid.uuid4().hex[:8]
 
     # Start a new session if needed
     if conv_state is None:
@@ -44,16 +52,21 @@ def chat_fn(user_input, chat_history, conv_state):
 
     # Run conversation pipeline
     intent, prompt_key, history_for_llm, payload = conv_state.pipeline(user_input)
+    #Log detected intent
+    log("intent", request_id, f"Intent resolved: {intent}")
+
 
 
     #Intent handling 
     match intent: 
         case "BLOCKED":
             assistant_output= payload  #NEVER calls the LLM
+            log("guardrail", request_id, f"Blocked unsafe input: '{user_input}'")
         case "SUGGESTION":
             assistant_output= payload 
         case "LIMIT_REACHED":
             assistant_output= payload 
+            log("limit", request_id, "Conversation reset due to turn limit")
         #Normal flow
         case _:
             # Build LLM messages
@@ -62,14 +75,15 @@ def chat_fn(user_input, chat_history, conv_state):
             assistant_output = llm.generate(messages)
 
             #Fallback
-            if assistant_output is None:
-                assistant_output = ( "⚠️ *Modo fallback activado*.\n"
-                    "Hubo un problema al conectarme con el modelo. "
-                    "Por favor, intenta nuevamente en unos momentos.")
-            elif "Hubo un problema al conectarme" in assistant_output:
+            if (assistant_output is None or "Hubo un problema al conectarme" in assistant_output):
+                log("fallback", request_id, "LLM service unavailable")
                 assistant_output = (
-                    "⚠️ *Modo fallback activado*.\n\n" + assistant_output
+                    "⚠️ *Modo fallback activado*\n\n"
+                    "Hubo un problema al conectarme con el modelo. "
+                    "Por favor, intenta nuevamente en unos momentos."
                 )
+
+
 
     # Update internal conversation state
     conv_state.update_state(user_input, assistant_output)
