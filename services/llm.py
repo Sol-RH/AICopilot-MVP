@@ -8,6 +8,7 @@ Handles timeouts, retries, backoff and error normalization.
 import os
 import time
 from groq import Groq
+import httpx
 
 
 class LLMClient:
@@ -31,10 +32,18 @@ class LLMClient:
 
         # Retry configuration
         self.max_retry = 2
-        self.timeout_secs = 12  # handled externally
+        self.timeout_secs = 12  
+
+        self.latencies=[]
 
     """
     Sends the message list to the model with retries and exponential backoff.
+    
+        Handles:
+        - HTTP 400 → no retry, fallback inmediato
+        - HTTP 401/403 → clave inválida, fallback inmediato
+        - HTTP 500/503 → retry con backoff
+        - Timeout → tratado como 500 (retry)
     """
 
     def generate(self, messages: list) -> str:
@@ -50,21 +59,43 @@ class LLMClient:
                     top_p=self.top_p,
                     max_tokens=self.max_tokens,
                     seed=self.seed,
+                    timeout=self.timeout_secs,
                 )
 
                 # Latency (used later in README metrics)
                 latency = time.time() - start
+                self.latencies.append(latency)
 
                 return res.choices[0].message.content
 
-            except Exception:
-                # Retry
-                if attempt < self.max_retry:
-                    time.sleep(1 * (2 ** attempt))  # exponential backoff: 1s → 2s
-                    continue
+            except httpx.HTTPStatusError as e :
+                status= e.response.status_code
 
-                # Final fallback
+                match status: 
+                    case 400:
+                        return ("La solicitud no es válida. Revisa el formato, comando o parámetros.")
+                    case 401 | 403: 
+                        return ("La clave API no es válida o no tengo permiso para acceder al modelo. "
+                                "No puedo procesar solicitudes.")
+                    case 500 | 503: 
+                        if attempt < self.max_retry:
+                            time.sleep(1 * (2 ** attempt))
+                            continue
+                        return ("El servicio del modelo está experimentando problemas. "
+                                "Intenta nuevamente más tarde.")
+                    case _: 
+                        return "Error inesperado al procesar la solicitud."
+
+            except httpx.TimeoutException:
+                if attempt < self.max_retry: 
+                    time.sleep(1*(2 ** attempt))
+                    continue 
+                return "El servidor tardó demasiado en responder. Intenta de nuevo"
+            
+            except Exception: 
                 return (
                     "Hubo un problema al conectarme con el modelo. "
                     "Por favor, intenta nuevamente en unos momentos."
                 )
+
+                    
