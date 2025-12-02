@@ -57,9 +57,11 @@ Construir un asistente conversacional con:
     pip install -r requirements.txt
 
 **Variales de entorno**
+
 Copiar .env.example → .env y colocar:
-    GROQ_API_KEY="TU_LLAVE_AQUI"
-    MODEL_NAME="meta-llama/llama-4-maverick-17b-128e-instruct"
+
+        GROQ_API_KEY="TU_LLAVE_AQUI"
+        MODEL_NAME="meta-llama/llama-4-maverick-17b-128e-instruct"
 
 ## **4. Integración LLM**
 **Modelo**
