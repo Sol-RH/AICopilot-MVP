@@ -6,8 +6,9 @@ and the Groq LLM client, exposing them through a Gradio ChatInterface.
 # Add project root to PYTHONPATH when running locally (prevents ModuleNotFoundError)
 # This is safe on Hugging Face because the working directory is already the repo root
 import os
+
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 #Dependencies
