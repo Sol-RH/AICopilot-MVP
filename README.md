@@ -131,23 +131,23 @@ A continuación se documentan los resultados con precisión.
 
 **Prompting**
 
-✔ System prompt siempre presente
-✔ Truncado correcto del historial
-✔ Inserción ordenada de mensajes (system → history → user)
+- ✔ System prompt siempre presente
+- ✔ Truncado correcto del historial
+- ✔ Inserción ordenada de mensajes (system → history → user)
 
 **ConversationManager**
 
-✔ update_state mantiene solo últimos N turnos
-✔ pipeline detecta intents correctamente
-✔ reconoce /nota, /agenda, /busqueda, etc.
+- ✔ update_state mantiene solo últimos N turnos
+- ✔ pipeline detecta intents correctamente
+- ✔ reconoce /nota, /agenda, /busqueda, etc.
 
 **LLM**
 
-✔ Test 400: retorna fallback sin retry
-✔ Test 500: retry, luego fallback
-✔ Test timeout: retry → fallback
-✔ Test clave inválida: error 401 → fallback inmediato
-✔ Test success: devuelve contenido del modelo
+- ✔ Test 400: retorna fallback sin retry
+- ✔ Test 500: retry, luego fallback
+- ✔ Test timeout: retry → fallback
+- ✔ Test clave inválida: error 401 → fallback inmediato
+- ✔ Test success: devuelve contenido del modelo
 
 ***Resultado:**
 **TODAS las pruebas unitarias pasan.**
@@ -155,7 +155,8 @@ A continuación se documentan los resultados con precisión.
 ### **6.2 Pruebas E2E**
 
 **0. Prueba con API inválida**
-    GROQ_API_KEY="INVALID_TEST_KEY" python3 app/app.py
+
+        GROQ_API_KEY="INVALID_TEST_KEY" python3 app/app.py  
 
 **Salida esperada y obtenida:**
 - Log:
@@ -172,10 +173,10 @@ A continuación se documentan los resultados con precisión.
 
 - Métricas:
 
-    total_calls: 1
-    total_fallbacks: 1
-    retries: 0
-    latency: 0 ms
+    - total_calls: 1
+    - total_fallbacks: 1
+    - retries: 0
+    - latency: 0 ms
 
 
 **Validación de:**
@@ -195,15 +196,15 @@ Secuencia validada:
 
 **Creación y recuperación de notas**
 
-- /nota Contraseña Ticketmaster sosososos …
+- `/nota Contraseña Ticketmaster sosososos …`
 
-- Recuperada correctamente con /vernota Ticketmaster.
+- Recuperada correctamente con `/vernota Ticketmaster`.
 
 **Recordatorios con fecha**
 
-/recordatorio Expo Ingenierías…
+- `/recordatorio Expo Ingenierías…`
 
-Posteriormente visible en /agenda.
+- `Posteriormente visible en /agenda.`
 
 **Intentos de contenido inseguro**
 
@@ -211,12 +212,12 @@ Posteriormente visible en /agenda.
 
 - Log:
 
-    BLOCKED | req=... | Blocked unsafe input
+        BLOCKED | req=... | Blocked unsafe input
 
 
 - Respuesta:
 
-    Lo siento, no puedo ayudar con esa solicitud.
+        Lo siento, no puedo ayudar con esa solicitud.
 
 **Turn limit**
 
@@ -226,7 +227,7 @@ Posteriormente visible en /agenda.
 
  - Reinicio automático en turno 20.
 
- - Nuevo turno inicia en [Turno 1/20].
+ - Nuevo turno inicia en `[Turno 1/20]`.
 
 
 **Validaciones cubiertas**
