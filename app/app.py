@@ -7,7 +7,7 @@ and the Groq LLM client, exposing them through a Gradio ChatInterface.
 # This is safe on Hugging Face because the working directory is already the repo root
 import os
 import sys
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 #Dependencies
@@ -28,7 +28,9 @@ llm = LLMClient()
 
 #Welcome message
 WELCOME = """
-👋 **Bienvenido a AI Copilot**
+👋 **Hola, soy AI Copilot **
+Soy tu asistente conversacional. 
+ Estoy aquí para ayudarte con tareas diarias, búsquedas rápidas de información y apoyo en educación y productividad
 
 Funciones disponibles:
 - `/nota <texto>` para crear una nota.
@@ -36,8 +38,6 @@ Funciones disponibles:
 - `/agenda` para ver tu agenda.
 - `/vernota <texto>` para ver una nota específica.
 - `/busqueda <texto>` para búsqueda rápida.
-
-Si no sabes cómo empezar, escribe **/tutorial**.
 """
 
 
