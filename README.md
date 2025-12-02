@@ -19,11 +19,17 @@ El sistema responde a necesidades de tareas diarias, búsquedas rápidas de info
 
 ### **1. Objetivo del Proyecto**
 Construir un asistente conversacional con:
+
     - Integración estable con LLM (Groq).
+
     - Control avanzado de timeouts, reintentos y fallbacks.
+
     - Memoria conversacional corta y truncado de historial.
-    - Manejo de intents simples (/nota, /recordatorio, /busqueda, etc.).
+
+    - Manejo de intents simples (/nota, /recordatorio, /busqueda, etc.)
+
     - Guardrails de seguridad.
+    
     - Métricas de desempeño en latencia, uso de token y manejo de errores
 
 ### **2. Arquitectura del MVP**
