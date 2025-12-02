@@ -33,20 +33,20 @@ Construir un asistente conversacional con:
     - Métricas de desempeño en latencia, uso de token y manejo de errores
 
 ### **2. Arquitectura del MVP**
-/core
-    prompting.py        → Plantillas system/user/assistant y truncado.
-    conversation.py     → Manejo del historial, intents y pipeline conversacional.
-
-/services
-    llm.py              → Cliente Groq (timeouts, retries, errores, métricas).
-
-/app
-    app.py              → Interfaz Gradio para web demo.
-
-/tests
-    test_prompting.py
-    test_conversation.py
-    test_llm.py
-
-.env.example            → Variables de entorno (sin claves reales).
-README.md
+    /core
+        prompting.py        → Plantillas system/user/assistant y truncado.
+        conversation.py     → Manejo del historial, intents y pipeline conversacional.
+    
+    /services
+        llm.py              → Cliente Groq (timeouts, retries, errores, métricas).
+    
+    /app
+        app.py              → Interfaz Gradio para web demo.
+    
+    /tests
+        test_prompting.py
+        test_conversation.py
+        test_llm.py
+    
+    .env.example            → Variables de entorno (sin claves reales).
+    README.md
