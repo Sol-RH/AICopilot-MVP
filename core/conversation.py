@@ -164,9 +164,8 @@ class ConversationManager:
                 prompt_key = "SP_REMINDER"
                 text = payload.strip()
 
-                # Detect a date expression like:
-                # "3 de diciembre", "10 de Septiembre", "05/12/2025"
-                date_patterns = r"\d{1,2}\s*de\s*[a-záéíóú]+|\d{1,2}/\d{1,2}/\d{2,4}"
+                # Detect a date expression like: "3 de diciembre", "10 de Septiembre", "05/12/2025"
+                date_patterns = date_patterns = r"\d{1,2}\s*de\s*[a-záéíóú]+\s*(de\s*\d{4})?|\d{1,2}/\d{1,2}/\d{2,4}"
                 found = re.search(date_patterns, text.lower())
 
                 if not found:
@@ -197,33 +196,29 @@ class ConversationManager:
                         parsed_date = None
 
                 else:
-                    # 5 de diciembre format
                     try:
-                        # Normalize
-                        day_str, _, month_str = raw_date.split()
-                        day = int(day_str)
-                        month_str_norm = month_str.lower()
+                        tokens = raw_date.split()
+                        day = int(tokens[0])
 
-                        # Try direct match
-                        month = meses.get(month_str_norm)
+                        month_str_norm = tokens[2].lower()
 
-                        # Try fuzzy match if direct match fails
+                        month = meses.get(month_str_norm)   # direct match
+
+                        # fuzzy correction if needed
                         if month is None:
                             posibles = difflib.get_close_matches(
-                                month_str_norm,
-                                meses.keys(),
-                                n=1,
-                                cutoff=0.7  # similarity threshold
+                                month_str_norm, meses.keys(), n=1, cutoff=0.7
                             )
                             if posibles:
                                 month = meses[posibles[0]]
 
+                        year = datetime.now().year   # detect year
+                        if len(tokens) >= 5 and tokens[-1].isdigit() and len(tokens[-1]) == 4:
+                            year = int(tokens[-1])
+
                         if month:
-                            parsed_date = datetime(
-                                year=datetime.now().year,
-                                month=month,
-                                day=day
-                            )
+                             parsed_date = datetime(year=year, month=month, day=day)
+
                     except:
                         parsed_date = None
 
