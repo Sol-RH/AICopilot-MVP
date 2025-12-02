@@ -304,7 +304,7 @@ A continuación se presentan los resultados de tres corridas independientes ejec
 
 - Persistencia real (SQLite o TinyDB)
 
--Análisis de documentos (PDF, imágenes)
+- Análisis de documentos (PDF, imágenes)
 
 - Integración con herramientas externas (Wikipedia API)
 
