@@ -18,6 +18,11 @@ pinned: false
 AI Copilot es un MVP de asistente conversacional diseñado para demostrar integración con un LLM abierto (Llama 4 Maverick vía Groq), implementando lógica conversacional controlada, seguridad, manejo de intents y recuperación de contexto a corto plazo.
 El sistema responde a necesidades de tareas diarias, búsquedas rápidas de información y apoyo educativo/productivo
 
+**Liga al demo web funcional**
+
+[![HuggingFace Space](https://img.shields.io/badge/🤗_HuggingFace_Space-AICopilot-yellow?style=for-the-badge)](https://huggingface.co/spaces/SolRH/AICopilot)
+
+
 ## **1. Objetivo del Proyecto**
 Construir un asistente conversacional con:
 
@@ -312,4 +317,4 @@ A continuación se presentan los resultados de tres corridas independientes ejec
 
 - Historial ampliado mediante resúmenes automáticos
 
-- Endpoint `/health` para exponer métricas en JSON 
+- Endpoint `/health` para exponer métricas en JSON
