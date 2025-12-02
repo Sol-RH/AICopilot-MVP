@@ -156,64 +156,64 @@ class ConversationManager:
                 prompt_key = "SP_NOTE"
                 text = payload.strip()
 
-                # Add today's date automatically (notes behave like real quick notes)
                 today = datetime.now().strftime("%d de %B de %Y")
-                text = f"{text} (fecha: {today})"
+                payload = f"{text} (fecha: {today})"
 
-                payload = text
-           
+            # ✔ RECORDATORIOS → fecha válida obligatoria
             case "REMINDER":
                 prompt_key = "SP_REMINDER"
                 text = payload.strip()
 
-                # Date pattern: DD de mes | DD/MM/YYYY
+                # detect date
                 date_patterns = r"\d{1,2}\s*de\s*[a-záéíóú]+|\d{1,2}/\d{1,2}/\d{2,4}"
-                found_date = re.search(date_patterns, text.lower())
+                found = re.search(date_patterns, text.lower())
 
-                # If no date provided -> ask user
-                if not found_date:
-                    ask_date = (
-                        "Puedo crear tu recordatorio, pero necesito la fecha.\n"
-                        "¿En qué fecha deseas programarlo?"
+                # ask for missing date
+                if not found:
+                    return (
+                        "BLOCKED",
+                        "SP_DEFAULT",
+                        self.history,
+                        "Necesito la fecha para crear este recordatorio. ¿Qué fecha deseas usar?",
                     )
-                    return ("BLOCKED", "SP_DEFAULT", self.history, ask_date)
 
-                raw_date = found_date.group()
-                parsed = None
+                raw_date = found.group()
+                parsed_date = None
 
-                # Try DD/MM/YYYY
+                # try DD/MM/YYYY
                 try:
                     if "/" in raw_date:
-                        parsed = datetime.strptime(raw_date.replace(" ", ""), "%d/%m/%Y")
+                        parsed_date = datetime.strptime(raw_date.replace(" ", ""), "%d/%m/%Y")
                 except:
-                    parsed = None
+                    parsed_date = None
 
-                # Try “5 de diciembre”
-                if parsed is None:
+                # try "5 de diciembre"
+                if parsed_date is None:
                     try:
-                        parsed = datetime.strptime(raw_date, "%d de %B")
-                        parsed = parsed.replace(year=datetime.now().year)
+                        parsed_date = datetime.strptime(raw_date, "%d de %B")
+                        parsed_date = parsed_date.replace(year=datetime.now().year)
                     except:
-                        parsed = None
+                        parsed_date = None
 
-                # Invalid format
-                if parsed is None:
-                    err = (
-                    "No pude interpretar la fecha. "
-                    "Por favor usa formatos como '5 de diciembre' o '05/12/2025'."
+                # invalid
+                if parsed_date is None:
+                    return (
+                        "BLOCKED",
+                        "SP_DEFAULT",
+                        self.history,
+                        "No pude interpretar la fecha. Usa formatos como '5 de diciembre' o '05/12/2025'.",
                     )
-                    return ("BLOCKED", "SP_DEFAULT", self.history, err)
 
-                # A past date → reject
-                today_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-                if parsed < today_date:
-                    err = (
-                        "La fecha proporcionada ya pasó. "
-                        "No puedo crear recordatorios con fechas anteriores a hoy."
+                # past date
+                today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                if parsed_date < today:
+                    return (
+                        "BLOCKED",
+                        "SP_DEFAULT",
+                        self.history,
+                        "La fecha proporcionada ya pasó. No puedo crear recordatorios con fechas anteriores a hoy.",
                     )
-                    return ("BLOCKED", "SP_DEFAULT", self.history, err)
 
-                # Final validated reminder payload
                 payload = text
 
             
