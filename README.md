@@ -63,6 +63,9 @@ Copiar .env.example → .env y colocar:
 ## **4. Integración LLM**
 **Modelo**
 - meta-llama/llama-4-maverick-17b-128e-instruct
+- Este modelo se eligió porque ofrece un balance sólido entre capacidad de razonamiento y baja latencia, gracias a su arquitectura optimizada (128E) para ejecución rápida en Groq.
+Al ser una versión instruct-tuned, sigue comandos con alta precisión y mantiene respuestas seguras y coherentes, lo cual es ideal para un asistente con intents estructurados y memoria corta.
+
 
 - Menor latencia, más estable, económico, perfecto para MVP.
 
@@ -131,38 +134,38 @@ A continuación se documentan los resultados con precisión.
 
 **Prompting**
 
-- ✔ System prompt siempre presente
-- ✔ Truncado correcto del historial
-- ✔ Inserción ordenada de mensajes (system → history → user)
+- System prompt siempre presente ✔ 
+- Truncado correcto del historial ✔ 
+- Inserción ordenada de mensajes (system → history → user) ✔ 
 
 **ConversationManager**
 
-- ✔ update_state mantiene solo últimos N turnos
-- ✔ pipeline detecta intents correctamente
-- ✔ reconoce /nota, /agenda, /busqueda, etc.
+- update_state mantiene solo últimos N turnos ✔ 
+- pipeline detecta intents correctamente ✔ 
+- reconoce /nota, /agenda, /busqueda, etc. ✔ 
 
 **LLM**
 
-- ✔ Test 400: retorna fallback sin retry
-- ✔ Test 500: retry, luego fallback
-- ✔ Test timeout: retry → fallback
-- ✔ Test clave inválida: error 401 → fallback inmediato
-- ✔ Test success: devuelve contenido del modelo
+- Test 400: retorna fallback sin retry ✔ 
+- Test 500: retry, luego fallback ✔ 
+- Test timeout: retry → fallback ✔ 
+- Test clave inválida: error 401 → fallback inmediato ✔ 
+- Test success: devuelve contenido del modelo ✔ 
 
 ***Resultado:**
 **TODAS las pruebas unitarias pasan.**
 
 ### **6.2 Pruebas E2E**
 
-**0. Prueba con API inválida**
+### **0. Prueba con API inválida**
 
         GROQ_API_KEY="INVALID_TEST_KEY" python3 app/app.py  
 
 **Salida esperada y obtenida:**
 - Log:
 
-    INTENT | ... | Intent resolved: DEFAULT
-    FALLBACK | ... | LLM service unavailable
+        INTENT | ... | Intent resolved: DEFAULT
+        FALLBACK | ... | LLM service unavailable
 
 
 - Mensaje al usuario:
@@ -185,7 +188,7 @@ A continuación se documentan los resultados con precisión.
 
 - Fallback visible + log en consola.
 
-**1. Conversación larga, 20 turnos**
+### **1. Conversación larga, 20 turnos**
 Secuencia validada:
 
 **Memoria de identidad**
@@ -240,3 +243,70 @@ Secuencia validada:
 
 - Guardrails de seguridad
 
+### **Conclusión General de Pruebas**
+
+| Requisito                                                                | Estado                     |
+| ------------------------------------------------------------------------ | -------------------------- |
+| Memoria corta tipo chat                                                  | ✔ Cumplido                 |
+| Intents funcionales (/nota, /recordatorio, /agenda, /vernota, /busqueda) | ✔ Cumplido                 |
+| Coherencia tras 8+ turnos                                                | ✔ Validado en corridas 1–3 |
+| Manejo de límites de sesión                                              | ✔ Validado                 |
+| Fallback ante API inválida                                               | ✔ Validado                 |
+| Guardrails para contenido peligroso                                      | ✔ Validado                 |
+| Métricas reales de LLM                                                   | ✔ Registradas              |
+| Pruebas unitarias (prompting, conversation, llm)                         | ✔ 100% passing             |
+
+
+## ** 7. Métricas**
+
+A continuación se presentan los resultados de tres corridas independientes ejecutadas en entorno local, midiendo:
+
+- latencia promedio
+
+- p50 / p95
+
+- reintentos
+
+- fallbacks
+
+- tokens utilizados
+
+- total de llamadas al modelo
+
+**Tabla de Métricas por Corrida**
+
+| Corrida                                  | Total Calls | Avg Latency (ms) | p50 (ms) | p95 (ms) | Retries | Fallbacks | Total Tokens |
+| ---------------------------------------- | ----------- | ---------------- | -------- | -------- | ------- | --------- | ------------ |
+| **Run 0** (API inválida / fallback test) | 1           | 0                | 0        | 0        | 0       | **1**     | 0            |
+| **Run 1**                                | 18          | 468.85           | 348.70   | 1315.61  | 0       | 0         | 7522         |
+| **Run 2**                                | 20          | 794.77           | 399.69   | 1836.00  | 0       | 0         | 8592         |
+| **Run 3**                                | 11          | 482.43           | 471.73   | 592.67   | 0       | 0         | 4965         |
+
+
+## **8. Limitaciones Actuales**
+
+- No existe persistencia real (solo memoria de sesión en RAM).
+
+- La agenda y notas se pierden tras reinicio.
+
+- No soporta attachments, imágenes o documentos.
+
+- Búsqueda semántica no implementada (solo respuestas directas del LLM).
+
+- El throttling/token budgeting es básico.
+
+- No implementa multillamadas o herramientas externas (Bing, Wikipedia, etc.).
+
+## **9. Posibles Mejoras**
+
+- Persistencia real (SQLite o TinyDB)
+
+-Análisis de documentos (PDF, imágenes)
+
+- Integración con herramientas externas (Wikipedia API)
+
+- UX mejorada con componentes adicionales en Gradio
+
+- Historial ampliado mediante resúmenes automáticos
+
+- Endpoint `/health` para exponer métricas en JSON 
