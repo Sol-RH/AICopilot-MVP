@@ -4,6 +4,7 @@
 from core.prompting import sanitize_input
 from datetime import datetime
 import re 
+import difflib
 
 
 class ConversationManager: 
@@ -159,16 +160,15 @@ class ConversationManager:
                 today = datetime.now().strftime("%d de %B de %Y")
                 payload = f"{text} (fecha: {today})"
 
-            # ✔ RECORDATORIOS → fecha válida obligatoria
             case "REMINDER":
                 prompt_key = "SP_REMINDER"
                 text = payload.strip()
 
-                # detect date
+                # Detect a date expression like:
+                # "3 de diciembre", "10 de Septiembre", "05/12/2025"
                 date_patterns = r"\d{1,2}\s*de\s*[a-záéíóú]+|\d{1,2}/\d{1,2}/\d{2,4}"
                 found = re.search(date_patterns, text.lower())
 
-                # ask for missing date
                 if not found:
                     return (
                         "BLOCKED",
@@ -177,25 +177,57 @@ class ConversationManager:
                         "Necesito la fecha para crear este recordatorio. ¿Qué fecha deseas usar?",
                     )
 
-                raw_date = found.group()
+                raw_date = found.group().strip()
                 parsed_date = None
 
-                # try DD/MM/YYYY
-                try:
-                    if "/" in raw_date:
-                        parsed_date = datetime.strptime(raw_date.replace(" ", ""), "%d/%m/%Y")
-                except:
-                    parsed_date = None
+                #Dictionary for mapping 
+                meses = {
+                    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
+                    "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
+                    "septiembre": 9, "setiembre": 9,
+                    "octubre": 10, "noviembre": 11, "diciembre": 12
+                }
 
-                # try "5 de diciembre"
-                if parsed_date is None:
+        
+                # DD/MM/YYYY  format
+                if "/" in raw_date:
                     try:
-                        parsed_date = datetime.strptime(raw_date, "%d de %B")
-                        parsed_date = parsed_date.replace(year=datetime.now().year)
+                        parsed_date = datetime.strptime(raw_date.replace(" ", ""), "%d/%m/%Y")
                     except:
                         parsed_date = None
 
-                # invalid
+                else:
+                    # 5 de diciembre format
+                    try:
+                        # Normalize
+                        day_str, _, month_str = raw_date.split()
+                        day = int(day_str)
+                        month_str_norm = month_str.lower()
+
+                        # Try direct match
+                        month = meses.get(month_str_norm)
+
+                        # Try fuzzy match if direct match fails
+                        if month is None:
+                            posibles = difflib.get_close_matches(
+                                month_str_norm,
+                                meses.keys(),
+                                n=1,
+                                cutoff=0.7  # similarity threshold
+                            )
+                            if posibles:
+                                month = meses[posibles[0]]
+
+                        if month:
+                            parsed_date = datetime(
+                                year=datetime.now().year,
+                                month=month,
+                                day=day
+                            )
+                    except:
+                        parsed_date = None
+
+                #Still invalid
                 if parsed_date is None:
                     return (
                         "BLOCKED",
@@ -204,7 +236,7 @@ class ConversationManager:
                         "No pude interpretar la fecha. Usa formatos como '5 de diciembre' o '05/12/2025'.",
                     )
 
-                # past date
+                #Rejects past dates
                 today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
                 if parsed_date < today:
                     return (
@@ -213,7 +245,7 @@ class ConversationManager:
                         self.history,
                         "La fecha proporcionada ya pasó. No puedo crear recordatorios con fechas anteriores a hoy.",
                     )
-
+                
                 payload = text
 
             
