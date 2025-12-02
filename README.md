@@ -11,8 +11,9 @@ pinned: false
 
 # AI Copilot — MVP 
 
-Autor: Marisol S. Herrera
-Fecha: Diciembre 2025
+**Autor:** Marisol S. Herrera
+
+**Fecha:** Diciembre 2025
 
 AI Copilot es un MVP de asistente conversacional diseñado para demostrar integración con un LLM abierto (Llama 4 Maverick vía Groq), implementando lógica conversacional controlada, seguridad, manejo de intents y recuperación de contexto a corto plazo.
 El sistema responde a necesidades de tareas diarias, búsquedas rápidas de información y apoyo educativo/productivo
