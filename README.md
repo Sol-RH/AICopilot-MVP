@@ -257,9 +257,9 @@ Secuencia validada:
 | Pruebas unitarias (prompting, conversation, llm)                         | ✔ 100% passing             |
 
 
-## ** 7. Métricas**
+## **7. Métricas**
 
-A continuación se presentan los resultados de tres corridas independientes ejecutadas en entorno local, midiendo:
+A continuación se presentan los resultados de tres corridas independientes ejecutadas en entorno local. Las métricas corresponde a: 
 
 - latencia promedio
 
